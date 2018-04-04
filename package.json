@@ -17,7 +17,7 @@
   },
   "scripts": {
       "lint": "eslint",
-      "watch": "rollup -c -w rollup.config.palette.js",
+      "watch": "rollup -c rollup.config.palette.js -w",
       "build": "rollup -c rollup.config.palette.js && web-ext build"
   }
 }
