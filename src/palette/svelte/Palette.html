@@ -1,4 +1,4 @@
-<div id="wrapper">
+<div id="wrapper" class="browser-style">
     <div id="filter_box">
         <form on:submit="activateTopTab()">
             <input type="search"
@@ -8,25 +8,30 @@
         </form>
     </div>
     {{#await filtered_windows}}
-    <p>Loading...</p>
+    <Loading/>
     {{then answer}}
-    {{#each answer as win}}
-    <div class="window">
-        <h3>{{ win.title }}</h3>
-        {{#each win.tabs as tab}}
-        <div class="tab">
-            {{#if tab.favIconUrl}}
-            <img src="{{ tab.favIconUrl }}" alt="favicon" width="16" height="16">
-            {{else}}
-            <img src="static/tab.png" alt="no favicon" width="16" height="16">
-            {{/if}}
-            {{ tab.title }}
-            {{#if tab.container}}
-            <span style="color: {{ tab.container.colorCode }}">
-                <img src="{{ tab.container.iconUrl }}" alt="container" width="16" height="16">
-                {{ tab.container.name }}
-            </span>
-            {{/if}}
+    {{#each answer as win @id}}
+    <div class="window panel-section-list">
+        <div class="panel-section-header no-overflow">
+            <span class="text-section-header ellipsis">{{ win.title }}</span>
+        </div>
+        {{#each win.tabs as tab @id}}
+        <div class="tab panel-list-item"
+                on:click="activateTab(tab.id)">
+            <div
+                class="container-check no-overflow"
+                data-has-container="{{tab.container ? 'yes' : 'no'}}"
+                style="border-bottom-color: {{tab.container ? tab.container.colorCode : black}};">
+                {{#if tab.favIconUrl}}
+                <img class="icon"
+                    src="{{ tab.favIconUrl }}"
+                    on:error="noFavicon(tab)"
+                    alt="favicon" width="16" height="16">
+                {{else}}
+                <img class="icon" src="palette/static/folder-16.svg" alt="no favicon" width="16" height="16">
+                {{/if}}
+                <span class="text ellipsis">{{ tab.title }}</span>
+            </div>
         </div>
         {{/each}}
     </div>
@@ -44,27 +49,50 @@
         width: 500px;
         height: 500px;
         padding: 10px;
+        overflow-x: hidden;
     }
 
-    .window {
+    input[type="search"] {
         width: 100%;
-        display: flex;
-        flex-direction: column;
     }
 
-    .tab {
-        padding-left: 10px;
-        display: flex;
-        align-items: center;
-        flex-direction: row;
+    .no-overflow {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ellipsis {
+        width: auto;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     .tab > * {
-        margin-right: 5px;
+        margin-right: 10px;
+    }
+
+    .container-check[data-has-container="yes"] {
+        position: relative;
+        max-width: 100%;
+    }
+
+    .container-check[data-has-container="yes"]::after {
+        content: '';
+        border-bottom: 2px solid;
+        border-bottom-color: inherit;
+        position: absolute;
+        left: 0;
+        top: calc(100% - 2px);
+        width: 100%;
     }
 </style>
 
 <script>
+    import Loading from './Loading.html';
+
     export default {
         data () {
             return {
@@ -135,8 +163,13 @@
 
         methods: {
             activateTab: function(tab_id) {
-                browser.tabs.update(tab_id, { active: true });
-                window.close();
+                browser.tabs.update(tab_id, { active: true }).then((tab) => {
+                    return browser.windows.update(tab.windowId, { focused: true });
+                }).then((win) => {
+                    window.close();
+                }).catch((err) => {
+                    console.error(err);
+                });
             },
 
             activateTopTab: function() {
@@ -148,9 +181,18 @@
                         return;
                     }
                     const tab = filtered_windows[0].tabs[0];
+                    console.log(`Switching to tab ${tab.id} in window ${tab.windowId}`);
                     this.activateTab(tab.id);
                 });
+            },
+
+            noFavicon: function(tab) {
+                tab.favIconUrl = null;
             }
+        },
+
+        components: {
+            Loading
         }
     }
 </script>
