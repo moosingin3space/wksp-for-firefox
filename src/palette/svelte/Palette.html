@@ -13,7 +13,7 @@
             <span class="text-section-header ellipsis">{{ win.title }}</span>
         </div>
         {{#each win.tabs as tab, j @id}}
-        <Selectable on:select="activateTabAndClose(tab.id)"
+        <Selectable on:select="activateTab(tab.id)"
             highlighted="{{ constrained_highlight.window == i && constrained_highlight.tab == j }}"
             on:highlight="markHighlight(i, j)">
             <div
@@ -179,17 +179,20 @@
         },
 
         methods: {
-            activateTab: function(tab_id) {
-                return browser.tabs.update(tab_id, { active: true }).then(tab => {
-                    return browser.windows.update(tab.windowId, { focused: true });
-                });
+            activateTab: function(tab_id, teleport=false) {
+                if (teleport) {
+                    return browser.windows.getCurrent({ windowTypes: ['normal'] })
+                        .then(win => browser.tabs.move(tab_id, { windowId: win.id, index: -1 }))
+                        .then(tab => browser.tabs.update(tab_id, { active: true }))
+                        .then(() => window.close());
+                } else {
+                    return browser.tabs.update(tab_id, { active: true })
+                        .then(tab => browser.windows.update(tab.windowId, { focused: true }))
+                        .then(() => window.close());
+                }
             },
 
-            activateTabAndClose: function(tab_id) {
-                this.activateTab(tab_id).then(() => window.close());
-            },
-
-            activateTopTab: function() {
+            activateTopTab: function(teleport=false) {
                 const filtered_windows = this.get("filtered_windows");
                 if (filtered_windows.length == 0) {
                     return;
@@ -198,8 +201,7 @@
                     return;
                 }
                 const tab = filtered_windows[0].tabs[0];
-                console.log(`Switching to tab ${tab.id} in window ${tab.windowId}`);
-                this.activateTabAndClose(tab.id);
+                this.activateTab(tab.id, teleport);
             },
 
             noFavicon: function(tab) {
@@ -211,11 +213,12 @@
                 let highlighted = this.get("constrained_highlight");
                 if (event.keyCode == 13) {
                     // enter
+                    const teleport = event.shiftKey;
                     if (highlighted.window < 0 || highlighted.tab < 0) {
-                        this.activateTopTab();
+                        this.activateTopTab(teleport);
                     } else {
                         const tab = windows[highlighted.window].tabs[highlighted.tab];
-                        this.activateTabAndClose(tab.id);
+                        this.activateTab(tab.id, teleport);
                     }
                 } else if (event.keyCode == 38) {
                     // up
