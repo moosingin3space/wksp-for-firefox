@@ -1,0 +1,46 @@
+<div ref:dom class="panel-list-item"
+    on:click="handleClick()"
+    on:mousemove="handleMove(event)"
+    on:mouseleave="handleMouseExit(event)"
+    data-highlight="{{highlighted ? 'yes' : 'no'}}">
+    <slot></slot>
+</div>
+
+<style>
+    div:hover {
+        background-color: unset;
+        border-bottom: unset;
+        border-top: unset;
+    }
+    div[data-highlight="yes"] {
+        background-color: rgba(0, 0, 0, 0.06);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script>
+    export default {
+        data () {
+            return {
+                highlighted: false
+            }
+        },
+        methods: {
+            handleClick: function() {
+                this.fire("select");
+            },
+
+            handleMove: function(e) {
+                e.stopPropagation();
+                this.set({ highlighted: true });
+                this.fire("highlight");
+            },
+
+            handleMouseExit: function(e) {
+                e.stopPropagation();
+                this.set({ highlighted: false });
+            }
+        }
+    }
+</script>

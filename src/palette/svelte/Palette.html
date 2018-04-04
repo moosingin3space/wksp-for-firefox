@@ -1,23 +1,21 @@
+<:Window on:keydown="handleKeyDown(event)"/>
+
 <div id="wrapper" class="browser-style">
     <div id="filter_box">
-        <form on:submit="activateTopTab()">
-            <input type="search"
-                ref:filterbox 
-                bind:value="filter"
-                placeholder="Filter...">
-        </form>
+        <input type="search"
+            ref:filterbox 
+            bind:value="filter"
+            placeholder="Filter...">
     </div>
-    {{#await filtered_windows}}
-    <Loading/>
-    {{then answer}}
-    {{#each answer as win @id}}
+    {{#each filtered_windows as win, i}}
     <div class="window panel-section-list">
         <div class="panel-section-header no-overflow">
             <span class="text-section-header ellipsis">{{ win.title }}</span>
         </div>
-        {{#each win.tabs as tab @id}}
-        <div class="tab panel-list-item"
-                on:click="activateTab(tab.id)">
+        {{#each win.tabs as tab, j @id}}
+        <Selectable on:select="activateTabAndClose(tab.id)"
+            highlighted="{{ constrained_highlight.window == i && constrained_highlight.tab == j }}"
+            on:highlight="markHighlight(i, j)">
             <div
                 class="container-check no-overflow"
                 data-has-container="{{tab.container ? 'yes' : 'no'}}"
@@ -32,14 +30,10 @@
                 {{/if}}
                 <span class="text ellipsis">{{ tab.title }}</span>
             </div>
-        </div>
+        </Selectable>
         {{/each}}
     </div>
     {{/each}}
-    {{catch error}}
-    <p>An error occured!</p>
-    <pre>{{ error }}</pre>
-    {{/await}}
 </div>
 
 <style>
@@ -91,108 +85,171 @@
 </style>
 
 <script>
-    import Loading from './Loading.html';
+    import Selectable from './Selectable.html';
 
     export default {
         data () {
             return {
-                windows: browser.windows.getAll({
-                    populate: true,
-                    windowTypes: ['normal']
-                }),
-                containers: browser.contextualIdentities.query({}),
-                filter: ""
+                filter: "",
+                highlighted: {
+                    window: -1,
+                    tab: -1
+                }
             };
         },
 
         computed: {
             containers_by_id: containers => {
-                return containers.then(contexts => {
-                    let containers = {};
-                    for (let i = 0; i < contexts.length; i++) {
-                        containers[contexts[i].cookieStoreId] = contexts[i];
-                    }
-                    return containers;
-                })
+                let containers_by_id = {};
+                for (let i = 0; i < containers.length; i++) {
+                    containers_by_id[containers[i].cookieStoreId] = containers[i];
+                }
+                return containers_by_id;
             },
             complete_windows: (windows, containers_by_id) => {
-                return Promise.all([windows, containers_by_id])
-                    .then(([windows, containers]) => {
-                        for (let i = 0; i < windows.length; i++) {
-                            for (let j = 0; j < windows[i].tabs.length; j++) {
-                                const container_id = windows[i].tabs[j].cookieStoreId;
-                                if (container_id && containers.hasOwnProperty(container_id)) {
-                                    windows[i].tabs[j].container = containers[container_id];
-                                }
-                            }
+                for (let i = 0; i < windows.length; i++) {
+                    for (let j = 0; j < windows[i].tabs.length; j++) {
+                        const container_id = windows[i].tabs[j].cookieStoreId;
+                        if (container_id && containers_by_id.hasOwnProperty(container_id)) {
+                            windows[i].tabs[j].container = containers_by_id[container_id];
                         }
-                        return windows;
-                    });
+                    }
+                }
+                return windows;
             },
             filtered_windows: (complete_windows, filter) => {
                 if (filter.length == 0) {
                     return complete_windows;
                 }
-                return complete_windows.then(windows => {
-                    let new_windows = [];
-                    const regex = new RegExp(filter, 'i');
-                    for (let i = 0; i < windows.length; i++) {
-                        let temp = [];
-                        for (let j = 0; j < windows[i].tabs.length; j++) {
-                            if (windows[i].tabs[j].title.match(regex)) {
-                                temp.push(windows[i].tabs[j]);
-                            }
-                        }
-
-                        if (temp.length > 0) {
-                            new_windows.push({
-                                tabs: temp,
-                                title: windows[i].title
-                            });
+                let new_windows = [];
+                const regex = new RegExp(filter, 'i');
+                for (let i = 0; i < complete_windows.length; i++) {
+                    let temp = [];
+                    for (let j = 0; j < complete_windows[i].tabs.length; j++) {
+                        if (complete_windows[i].tabs[j].title.match(regex)) {
+                            temp.push(complete_windows[i].tabs[j]);
                         }
                     }
 
-                    return new_windows;
-                });
+                    if (temp.length > 0) {
+                        new_windows.push({
+                            tabs: temp,
+                            title: complete_windows[i].title
+                        });
+                    }
+                }
+
+                return new_windows;
+            },
+            constrained_highlight: (filtered_windows, highlighted) => {
+                if (highlighted.tab < 0) {
+                    highlighted.window--;
+                    if (highlighted.window >= 0) {
+                        highlighted.tab = filtered_windows[highlighted.window].tabs.length-1;
+                    }
+                }
+
+                if (highlighted.window < 0) {
+                    highlighted.window = -1;
+                    return highlighted;
+                }
+                if (highlighted.window >= filtered_windows.length) {
+                    highlighted.window = filtered_windows.length-1;
+                }
+
+                if (highlighted.tab >= filtered_windows[highlighted.window].tabs.length) {
+                    if (highlighted.window == filtered_windows.length-1) {
+                        highlighted.tab = filtered_windows[highlighted.window].tabs.length-1;
+                    } else {
+                        highlighted.window++;
+                        highlighted.tab = 0;
+                    }
+                }
+
+                return highlighted;
             }
         },
 
         oncreate () {
-            this.refs.filterbox.focus();
+            this.observe("constrained_highlight", (hl) => {
+                if (hl.window < 0) {
+                    this.refs.filterbox.focus();
+                }
+            });
         },
 
         methods: {
             activateTab: function(tab_id) {
-                browser.tabs.update(tab_id, { active: true }).then((tab) => {
+                return browser.tabs.update(tab_id, { active: true }).then(tab => {
                     return browser.windows.update(tab.windowId, { focused: true });
-                }).then((win) => {
-                    window.close();
-                }).catch((err) => {
-                    console.error(err);
                 });
             },
 
+            activateTabAndClose: function(tab_id) {
+                this.activateTab(tab_id).then(() => window.close());
+            },
+
             activateTopTab: function() {
-                this.get("filtered_windows").then(filtered_windows => {
-                    if (filtered_windows.length == 0) {
-                        return;
-                    }
-                    if (filtered_windows[0].tabs.length == 0) {
-                        return;
-                    }
-                    const tab = filtered_windows[0].tabs[0];
-                    console.log(`Switching to tab ${tab.id} in window ${tab.windowId}`);
-                    this.activateTab(tab.id);
-                });
+                const filtered_windows = this.get("filtered_windows");
+                if (filtered_windows.length == 0) {
+                    return;
+                }
+                if (filtered_windows[0].tabs.length == 0) {
+                    return;
+                }
+                const tab = filtered_windows[0].tabs[0];
+                console.log(`Switching to tab ${tab.id} in window ${tab.windowId}`);
+                this.activateTabAndClose(tab.id);
             },
 
             noFavicon: function(tab) {
                 tab.favIconUrl = null;
+            },
+
+            handleKeyDown: function(event) {
+                const windows = this.get("filtered_windows");
+                let highlighted = this.get("constrained_highlight");
+                if (event.keyCode == 13) {
+                    // enter
+                    if (highlighted.window < 0 || highlighted.tab < 0) {
+                        this.activateTopTab();
+                    } else {
+                        const tab = windows[highlighted.window].tabs[highlighted.tab];
+                        this.activateTabAndClose(tab.id);
+                    }
+                } else if (event.keyCode == 38) {
+                    // up
+                    highlighted.tab--;
+                } else if (event.keyCode == 40) {
+                    // down
+                    if (highlighted.window < 0) {
+                        highlighted.window = 0;
+                        highlighted.tab = 0;
+                    } else {
+                        highlighted.tab++;
+                    }
+                } else if (event.keyCode == 191) {
+                    // slash (jump back to search)
+                    event.preventDefault();
+                    highlighted.window = -1;
+                    highlighted.tab = -1;
+                }
+
+                this.set({ highlighted });
+            },
+
+            markHighlight: function(i, j) {
+                this.set({
+                    highlighted: {
+                        window: i,
+                        tab: j
+                    }
+                });
             }
         },
 
         components: {
-            Loading
+            Selectable
         }
     }
 </script>

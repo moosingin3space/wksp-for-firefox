@@ -1,5 +1,17 @@
 import Palette from './svelte/Palette.html';
 
-const pal = new Palette({
-    target: document.querySelector('main')
+Promise.all([
+    browser.windows.getAll({
+        populate: true,
+        windowTypes: ['normal']
+    }),
+    browser.contextualIdentities.query({})
+]).then(([windows, containers]) => {
+    const pal = new Palette({
+        target: document.querySelector('main'),
+        data: {
+            windows,
+            containers
+        }
+    });
 });
