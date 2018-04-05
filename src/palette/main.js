@@ -1,10 +1,7 @@
 import Palette from './svelte/Palette.html';
 
 Promise.all([
-    browser.windows.getAll({
-        populate: true,
-        windowTypes: ['normal']
-    }),
+    browser.runtime.sendMessage({ type: 'get_mru' }),
     browser.contextualIdentities.query({})
 ]).then(([windows, containers]) => {
     const pal = new Palette({

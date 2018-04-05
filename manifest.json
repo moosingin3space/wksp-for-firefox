@@ -24,5 +24,9 @@
                 "default": "Alt+Space"
             }
         }
+    },
+
+    "background": {
+        "scripts": ["dist/background.js"]
     }
 }

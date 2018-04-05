@@ -1,9 +1,11 @@
 <div ref:dom class="panel-list-item"
-    on:click="handleClick()"
     on:mousemove="handleMove(event)"
     on:mouseleave="handleMouseExit(event)"
     data-highlight="{{highlighted ? 'yes' : 'no'}}">
-    <slot></slot>
+    <div class="flex-parent">
+        <slot name="main"></slot>
+        <slot name="controls"></slot>
+    </div>
 </div>
 
 <style>
@@ -17,6 +19,22 @@
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         border-top: 1px solid rgba(0, 0, 0, 0.1);
     }
+    .flex-parent {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .flex-parent > *:not(:last-child) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .flex-parent > *:first-child {
+        margin-right: 50px;
+    }
 </style>
 
 <script>
@@ -27,10 +45,6 @@
             }
         },
         methods: {
-            handleClick: function() {
-                this.fire("select");
-            },
-
             handleMove: function(e) {
                 e.stopPropagation();
                 this.set({ highlighted: true });
