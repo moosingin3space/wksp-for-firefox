@@ -16,19 +16,25 @@
         <Selectable on:select="activateTab(tab.id)"
             highlighted="{{ constrained_highlight.window == i && constrained_highlight.tab == j }}"
             on:highlight="markHighlight(i, j)">
-            <div
-                class="container-check no-overflow"
-                data-has-container="{{tab.container ? 'yes' : 'no'}}"
-                style="border-bottom-color: {{tab.container ? tab.container.colorCode : black}};">
-                {{#if tab.favIconUrl}}
-                <img class="icon"
-                    src="{{ tab.favIconUrl }}"
-                    on:error="noFavicon(tab)"
-                    alt="favicon" width="16" height="16">
-                {{else}}
-                <img class="icon" src="palette/static/folder-16.svg" alt="no favicon" width="16" height="16">
-                {{/if}}
-                <span class="text ellipsis">{{ tab.title }}</span>
+            <div class="flex-parent">
+                <div
+                    class="container-check no-overflow"
+                    data-has-container="{{tab.container ? 'yes' : 'no'}}"
+                    style="border-bottom-color: {{tab.container ? tab.container.colorCode : black}};">
+                    {{#if tab.favIconUrl}}
+                    <img class="icon"
+                        src="{{ tab.favIconUrl }}"
+                        on:error="noFavicon(tab)"
+                        alt="favicon" width="16" height="16">
+                    {{else}}
+                    <img class="icon" src="palette/static/folder-16.svg" alt="no favicon" width="16" height="16">
+                    {{/if}}
+                    <span class="text ellipsis">{{ tab.title }}</span>
+                </div>
+                <div class="controls">
+                    <img on:click="activateTab(tab.id, true)" class="icon" src="palette/static/paste-16.svg" alt="Paste tab here" width="16" height="16">
+                    <img on:click="closeTab(tab.id)" class="icon" src="palette/static/close-16.svg" alt="Close this tab" width="16" height="16">
+                </div>
             </div>
         </Selectable>
         {{/each}}
@@ -68,9 +74,25 @@
         margin-right: 10px;
     }
 
+    .flex-parent {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .flex-parent > *:not(:last-child) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .flex-parent > *:first-child {
+        margin-right: 50px;
+    }
+
     .container-check[data-has-container="yes"] {
         position: relative;
-        max-width: 100%;
     }
 
     .container-check[data-has-container="yes"]::after {
@@ -81,6 +103,15 @@
         left: 0;
         top: calc(100% - 2px);
         width: 100%;
+    }
+
+    .controls {
+        display: inline;
+        white-space: nowrap;
+    }
+
+    .controls > img:hover {
+        cursor: pointer;
     }
 </style>
 
@@ -190,6 +221,11 @@
                         .then(tab => browser.windows.update(tab.windowId, { focused: true }))
                         .then(() => window.close());
                 }
+            },
+
+            closeTab: function(tab_id) {
+                return browser.tabs.remove(tab_id)
+                    .then(() => window.close());
             },
 
             activateTopTab: function(teleport=false) {
