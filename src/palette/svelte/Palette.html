@@ -101,6 +101,8 @@
 
 <script>
     import Selectable from './Selectable.html';
+    import search from '../../search.js';
+    import activateTab from '../../activateTab.js';
 
     export default {
         data () {
@@ -132,30 +134,7 @@
                 }
                 return windows;
             },
-            filtered_windows: (complete_windows, filter) => {
-                if (filter.length == 0) {
-                    return complete_windows;
-                }
-                let new_windows = [];
-                const regex = new RegExp(filter, 'i');
-                for (let i = 0; i < complete_windows.length; i++) {
-                    let temp = [];
-                    for (let j = 0; j < complete_windows[i].tabs.length; j++) {
-                        if (complete_windows[i].tabs[j].title.match(regex)) {
-                            temp.push(complete_windows[i].tabs[j]);
-                        }
-                    }
-
-                    if (temp.length > 0) {
-                        new_windows.push({
-                            tabs: temp,
-                            title: complete_windows[i].title
-                        });
-                    }
-                }
-
-                return new_windows;
-            },
+            filtered_windows: (complete_windows, filter) => search(complete_windows, filter),
             constrained_highlight: (filtered_windows, highlighted) => {
                 if (highlighted.tab < 0) {
                     highlighted.window--;
@@ -195,18 +174,9 @@
 
         methods: {
             activateTab: function(tab_id, teleport=false) {
-                if (teleport) {
-                    return browser.windows.getCurrent({ windowTypes: ['normal'] })
-                        .then(win => browser.tabs.move(tab_id, { windowId: win.id, index: -1 }))
-                        .then(tab => browser.tabs.update(tab_id, { active: true }))
-                        .then(() => browser.runtime.sendMessage({ type: 'refresh_windows' }))
-                        .then(() => window.close());
-                } else {
-                    return browser.tabs.update(tab_id, { active: true })
-                        .then(tab => browser.windows.update(tab.windowId, { focused: true }))
-                        .then(() => browser.runtime.sendMessage({ type: 'refresh_windows' }))
-                        .then(() => window.close());
-                }
+                return activateTab(tab_id, teleport)
+                    .then(() => browser.runtime.sendMessage({ type: 'refresh_windows' }))
+                    .then(() => window.close());
             },
 
             closeTab: function(tab_id) {

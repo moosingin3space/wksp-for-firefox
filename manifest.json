@@ -28,5 +28,9 @@
 
     "background": {
         "scripts": ["dist/background.js"]
+    },
+
+    "omnibox": {
+        "keyword": "wksp"
     }
 }

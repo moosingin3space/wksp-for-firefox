@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import search from '../search.js';
+import activateTab from '../activateTab.js';
 
 browser.windows.getAll({
     populate: true,
@@ -55,19 +57,60 @@ browser.windows.getAll({
         delete mapper[win.id];
     });
 
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.type == 'get_mru') {
-            sendResponse(_.sortBy(mru, ['mru', 'id']));
-        } else if (message.type == 'refresh_windows') {
-            Promise.all(_.map(mru, (win, i) => {
+    function refreshMru() {
+        return Promise.all(_.map(mru, (win, i) => {
                 return browser.windows.get(win.id, { populate: true })
                     .then(win => {
                         const m = mru[i].mru;
                         mru[i] = Object.assign({}, { mru: m }, win);
                     });
-            })).then(() => sendResponse({ok: 'true'}));
+            }));
+    }
+
+    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.type == 'get_mru') {
+            sendResponse(_.sortBy(mru, ['mru', 'id']));
+        } else if (message.type == 'refresh_windows') {
+            refreshMru().then(() => sendResponse({ok: 'true'}));
         }
         return true;
+    });
+
+    browser.omnibox.onInputChanged.addListener((input, suggest) => {
+        const initial_search = search(mru, input);
+        let tabs = [];
+        for (let i = 0; i < initial_search.length; i++) {
+            Array.prototype.push.apply(tabs, initial_search[i].tabs);
+        }
+        let results = [];
+        for (let i = 0; i < tabs.length; i++) {
+            results.push({
+                content: `wksp|switch|${tabs[i].id}`,
+                description: `Switch to tab: ${tabs[i].title}`
+            });
+            results.push({
+                content: `wksp|teleport|${tabs[i].id}`,
+                description: `Teleport tab: ${tabs[i].title}`
+            });
+        }
+        suggest(results);
+    });
+
+    browser.omnibox.onInputEntered.addListener((content, disposition) => {
+        const [specifier, task, tabId] = content.split('|');
+        if (specifier !== 'wksp') {
+            return;
+        }
+
+        let teleport = false;
+        if (task == 'teleport') {
+            teleport = true;
+        } else if (task != 'switch') {
+            console.error('Not sure what to do');
+            return;
+        }
+        activateTab(tabId|0, teleport)
+            .then(() => refreshMru());
     });
 
     initMru(windows);
