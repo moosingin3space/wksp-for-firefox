@@ -165,6 +165,7 @@
         },
 
         oncreate () {
+            this.refs.filterbox.focus();
             this.observe("constrained_highlight", (hl) => {
                 if (hl.window < 0) {
                     this.refs.filterbox.focus();

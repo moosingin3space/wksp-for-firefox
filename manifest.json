@@ -1,9 +1,9 @@
 {
     "manifest_version": 2,
     "name": "Workspaces for Firefox",
-    "version": "1.0",
+    "version": "1.0.1",
 
-    "description": "Implements Firefox-wide tab management, inspired by KDE Plasma workspaces.",
+    "description": "Implements Firefox-wide tab management, inspired by virtual desktops.",
 
     "browser_action": {
         "default_icon": "icons/palette-32.png",
