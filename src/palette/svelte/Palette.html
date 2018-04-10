@@ -175,7 +175,6 @@
         methods: {
             activateTab: function(tab_id, teleport=false) {
                 return activateTab(tab_id, teleport)
-                    .then(() => browser.runtime.sendMessage({ type: 'refresh_windows' }))
                     .then(() => window.close());
             },
 
@@ -205,7 +204,7 @@
                 let highlighted = this.get("constrained_highlight");
                 if (event.keyCode == 13) {
                     // enter
-                    const teleport = event.shiftKey;
+                    const teleport = event.shiftKey; // shift+enter teleports tab into the current window
                     if (highlighted.window < 0 || highlighted.tab < 0) {
                         this.activateTopTab(teleport);
                     } else {

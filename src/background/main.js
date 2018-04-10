@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import sortBy from 'lodash.sortby';
 import search from '../search.js';
 import activateTab from '../activateTab.js';
 
@@ -17,6 +17,25 @@ browser.windows.getAll({
             }, windows[i]));
             mapper[windows[i].id] = i;
         }
+    }
+
+    function updateWindow(winId) {
+        return browser.windows.get(winId, { populate: true })
+            .then(win => {
+                if (!mapper.hasOwnProperty(win.id)) {
+                    mapper[win.id] = mru.length;
+                    mru.push(Object.assign({}, {
+                        mru: 0
+                    }, win));
+                } else {
+                    Object.assign(mru[mapper[win.id]], {}, win);
+                }
+            });
+    }
+
+    function updateAssociatedWindow(tabId) {
+        return browser.tabs.get(tabId)
+            .then(tab => updateWindow(tab.windowId));
     }
 
     function updateMru(win) {
@@ -56,22 +75,16 @@ browser.windows.getAll({
         }
         delete mapper[win.id];
     });
-
-    function refreshMru() {
-        return Promise.all(_.map(mru, (win, i) => {
-                return browser.windows.get(win.id, { populate: true })
-                    .then(win => {
-                        const m = mru[i].mru;
-                        mru[i] = Object.assign({}, { mru: m }, win);
-                    });
-            }));
-    }
+    browser.tabs.onCreated.addListener(tab => updateWindow(tab.windowId));
+    browser.tabs.onUpdated.addListener(tabId => updateAssociatedWindow(tabId));
+    browser.tabs.onRemoved.addListener((tabId, removeInfo) => updateWindow(removeInfo.windowId));
+    browser.tabs.onMoved.addListener((tabId, moveInfo) => updateWindow(moveInfo.windowId));
+    browser.tabs.onAttached.addListener((tabId, attachInfo) => updateWindow(attachInfo.newWindowId));
+    browser.tabs.onDetached.addListener((tabId, detachInfo) => updateWindow(detachInfo.oldWindowId));
 
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type == 'get_mru') {
-            sendResponse(_.sortBy(mru, ['mru', 'id']));
-        } else if (message.type == 'refresh_windows') {
-            refreshMru().then(() => sendResponse({ok: 'true'}));
+            sendResponse(sortBy(mru, ['mru', 'id']));
         }
         return true;
     });
