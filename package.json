@@ -26,6 +26,6 @@
     "watch": "concurrently -k -n \"palette,background\" \"yarn run watch:palette\" \"yarn run watch:background\"",
     "build:palette": "rollup -c rollup.config.palette.js",
     "build:background": "rollup -c rollup.config.background.js",
-    "build": "rimraf web-ext-artifacts && concurrently -n \"palette,background\" \"yarn run build:palette\" \"yarn run build:background\" && web-ext build"
+    "build": "rimraf web-ext-artifacts && concurrently -n \"palette,background\" \"yarn run build:palette\" \"yarn run build:background\" && web-ext build --ignore-files \"src/**/*\" \"rollup.*.js\""
   }
 }
