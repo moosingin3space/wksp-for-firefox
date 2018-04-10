@@ -1,41 +1,31 @@
 import sortBy from 'lodash.sortby';
-import forOwn from 'lodash.forown';
 import search from '../search.js';
 import activateTab from '../activateTab.js';
 
 let mru = {};
 
 function updateMru(winId) {
-    forOwn(mru, (value, key, obj) => {
-        obj[key] = value++;
-    });
+    const wins = Object.getOwnPropertyNames(mru);
+    for (let i = 0; i < wins.length; i++) {
+        mru[wins[i]]++;
+    }
     mru[winId] = 0;
 }
 
-browser.windows.onCreated.addListener(win => {
-    if (win.type == 'normal') {
-        updateMru(win);
-    }
-});
-browser.windows.onFocusChanged.addListener(winId => {
-    browser.windows.get(winId)
-        .then(win => {
-            if (win.type == 'normal') {
-                updateMru(win);
-            }
-        });
-});
-browser.windows.onRemoved.addListener(win => {
-    if (!mru.hasOwnProperty(win.id)) {
+browser.windows.onCreated.addListener(win => updateMru(win.id));
+browser.windows.onFocusChanged.addListener(winId => updateMru(winId));
+browser.windows.onRemoved.addListener(winId => {
+    if (!mru.hasOwnProperty(winId)) {
         return;
     }
-    const mru_val = mru[win.id];
-    forOwn(mru, (value, key, obj) => {
-        if (key != win.id && value > mru_val) {
-            obj[key]--;
+    const mru_val = mru[winId];
+    const wins = Object.getOwnPropertyNames(mru);
+    for (let i = 0; i < wins.length; i++) {
+        if (mru[wins[i]] > mru_val) {
+            mru[wins[i]]--;
         }
-    });
-    delete mru[win.id];
+    }
+    delete mru[winId];
 });
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -48,23 +38,26 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 browser.omnibox.onInputChanged.addListener((input, suggest) => {
-    const initial_search = search(mru, input);
-    let tabs = [];
-    for (let i = 0; i < initial_search.length; i++) {
-        Array.prototype.push.apply(tabs, initial_search[i].tabs);
-    }
-    let results = [];
-    for (let i = 0; i < tabs.length; i++) {
-        results.push({
-            content: `wksp|switch|${tabs[i].id}`,
-            description: `Switch to tab: ${tabs[i].title}`
+    browser.windows.getAll({ populate: true, windowTypes: ['normal'] })
+        .then((windows) => {
+            const initial_search = search(windows, input);
+            let tabs = [];
+            for (let i = 0; i < initial_search.length; i++) {
+                Array.prototype.push.apply(tabs, initial_search[i].tabs);
+            }
+            let results = [];
+            for (let i = 0; i < tabs.length; i++) {
+                results.push({
+                    content: `wksp|switch|${tabs[i].id}`,
+                    description: `Switch to tab: ${tabs[i].title}`
+                });
+                results.push({
+                    content: `wksp|teleport|${tabs[i].id}`,
+                    description: `Teleport tab: ${tabs[i].title}`
+                });
+            }
+            suggest(results);
         });
-        results.push({
-            content: `wksp|teleport|${tabs[i].id}`,
-            description: `Teleport tab: ${tabs[i].title}`
-        });
-    }
-    suggest(results);
 });
 
 browser.omnibox.onInputEntered.addListener((content, disposition) => {
@@ -80,6 +73,5 @@ browser.omnibox.onInputEntered.addListener((content, disposition) => {
         console.error('Not sure what to do');
         return;
     }
-    activateTab(tabId|0, teleport)
-        .then(() => refreshMru());
+    activateTab(tabId|0, teleport);
 });
