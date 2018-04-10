@@ -23,9 +23,11 @@
     "lint": "eslint",
     "watch:palette": "rollup -c rollup.config.palette.js -w",
     "watch:background": "rollup -c rollup.config.background.js -w",
-    "watch": "concurrently -k -n \"palette,background\" \"yarn run watch:palette\" \"yarn run watch:background\"",
+    "watch:options": "rollup -c rollup.config.options.js -w",
+    "watch": "concurrently -k -n \"palette,background,options\" \"yarn run watch:palette\" \"yarn run watch:background\" \"yarn run watch:options\"",
     "build:palette": "rollup -c rollup.config.palette.js",
     "build:background": "rollup -c rollup.config.background.js",
-    "build": "rimraf web-ext-artifacts && concurrently -n \"palette,background\" \"yarn run build:palette\" \"yarn run build:background\" && web-ext build --ignore-files \"src/**/*\" \"rollup.*.js\""
+    "build:options": "rollup -c rollup.config.options.js",
+    "build": "rimraf web-ext-artifacts && concurrently -n \"palette,background,options\" \"yarn run build:palette\" \"yarn run build:background\" \"yarn run build:options\" && web-ext build --ignore-files \"src/**/*\" \"rollup.*.js\""
   }
 }
