@@ -18,23 +18,32 @@
             on:highlight="markHighlight(i, j)">
             <div
                 slot="main"
-                class="container-check no-overflow"
                 on:click="activateTab(tab.id)"
-                data-has-container="{{tab.container ? 'yes' : 'no'}}"
-                style="border-bottom-color: {{tab.container ? tab.container.colorCode : black}};">
-                {{#if tab.favIconUrl}}
-                <img class="icon"
-                    src="{{ tab.favIconUrl }}"
-                    on:error="noFavicon(tab)"
-                    alt="favicon" width="16" height="16">
-                {{else}}
-                <img class="icon" src="palette/static/folder-16.svg" alt="no favicon" width="16" height="16">
-                {{/if}}
-                <span class="text ellipsis">{{ tab.title }}</span>
+                class="full-width">
+                <div
+                    class="container-check no-overflow"
+                    data-has-container="{{tab.container ? 'yes' : 'no'}}"
+                    style="border-bottom-color: {{tab.container ? tab.container.colorCode : black}};">
+                    {{#if tab.favIconUrl}}
+                    <img class="icon"
+                        src="{{ tab.favIconUrl }}"
+                        on:error="noFavicon(tab)"
+                        alt="favicon" width="16" height="16">
+                    {{else}}
+                    <img class="icon" src="palette/static/folder-16.svg" alt="no favicon" width="16" height="16">
+                    {{/if}}
+                    <span class="text ellipsis">{{ tab.title }}</span>
+                </div>
             </div>
             <div class="controls" slot="controls">
-                <img on:click="activateTab(tab.id, true)" class="icon" src="palette/static/paste-16.svg" alt="Paste tab here" width="16" height="16">
-                <img on:click="closeTab(tab.id)" class="icon" src="palette/static/close-16.svg" alt="Close this tab" width="16" height="16">
+                <img on:click="activateTab(tab.id, true)" class="icon"
+                    src="palette/static/paste-16.svg" alt="Paste tab here" width="16" height="16"
+                    title="Paste tab into current window"
+                />
+                <img on:click="closeTab(tab.id)" class="icon"
+                    src="palette/static/close-16.svg" alt="Close this tab" width="16" height="16"
+                    title="Close tab"
+                />
             </div>
         </Selectable>
         {{/each}}
@@ -63,6 +72,10 @@
         white-space: nowrap;
     }
 
+    .full-width {
+        width: calc(100% - 40px);
+    }
+
     .ellipsis {
         width: auto;
         text-overflow: ellipsis;
@@ -74,6 +87,9 @@
         margin-right: 10px;
     }
 
+    .container-check {
+        display: inline-block;
+    }
 
     .container-check[data-has-container="yes"] {
         position: relative;
