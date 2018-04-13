@@ -5,7 +5,12 @@
         <input type="search"
             ref:filterbox 
             bind:value="filter"
-            placeholder="Filter...">
+            placeholder="Filter..."/>
+        <img class="icon" src="palette/static/preferences-16-macos.svg"
+            alt="settings" width="16" height="16"
+            title="Open extension settings"
+            on:click="openSettings()"
+        />
     </div>
     {{#each filtered_windows as win, i}}
     <div class="window panel-section-list">
@@ -61,8 +66,18 @@
         overflow-x: hidden;
     }
 
+    #filter_box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #filter_box > img:hover {
+        cursor: pointer;
+    }
+
     input[type="search"] {
-        width: 100%;
+        width: calc(100% - 20px);
     }
 
     .no-overflow {
@@ -256,6 +271,11 @@
                         tab: j
                     }
                 });
+            },
+
+            openSettings: function() {
+                browser.runtime.openOptionsPage()
+                    .then(() => window.close());
             }
         },
 

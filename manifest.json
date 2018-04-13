@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Workspaces for Firefox",
-    "version": "1.0.4",
+    "version": "1.0.5",
 
     "description": "Implements Firefox-wide tab management, inspired by virtual desktops.",
 
@@ -27,7 +27,8 @@
     "commands": {
         "_execute_browser_action": {
             "suggested_key": {
-                "default": "Alt+Space"
+                "default": "Alt+Space",
+                "windows": "Ctrl+Space"
             }
         }
     },
