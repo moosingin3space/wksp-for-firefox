@@ -1,10 +1,15 @@
 import Options from './svelte/Options.html';
 
-browser.commands.getAll()
-    .then(commands => {
+Promise.all([
+    browser.commands.getAll(),
+    browser.storage.local.get({shouldCloseOnClose: false})
+]).then(([commands, stored_opts]) => {
         const cmd = commands[0];
         const opt = new Options({
             target: document.querySelector('main'),
-            data: cmd
+            data: {
+                shortcut: cmd.shortcut,
+                shouldCloseOnClose: stored_opts.shouldCloseOnClose
+            }
         });
-    });
+});

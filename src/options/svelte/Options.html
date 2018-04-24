@@ -5,6 +5,12 @@
 
     <div class="panel-section-formElements">
         <div class="panel-formElements-item">
+            <label>
+                <input type="checkbox" bind:checked="shouldCloseOnClose">
+                Close Palette when a tab is closed
+            </label>
+        </div>
+        <div class="panel-formElements-item">
             {{#if supported}}
             <span class="palette-label">
                 Palette Hotkey:
@@ -102,7 +108,9 @@
                 adjusting: false,
                 adjustingModifier: '',
                 adjustingShift: false,
-                adjustingKey: ''
+                adjustingKey: '',
+
+                shouldCloseOnClose: false
             };
         },
         computed: {
@@ -133,6 +141,11 @@
                     return shortcut;
                 }
             }
+        },
+        oncreate () {
+            this.observe("shouldCloseOnClose", (newVal) => {
+                browser.storage.local.set({shouldCloseOnClose: newVal});
+            });
         },
         methods: {
             click: function() {

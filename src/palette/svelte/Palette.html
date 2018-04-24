@@ -153,7 +153,8 @@
                 highlighted: {
                     window: -1,
                     tab: -1
-                }
+                },
+                shouldCloseOnClose: false
             };
         },
 
@@ -222,8 +223,15 @@
             },
 
             closeTab: function(tab_id) {
-                return browser.tabs.remove(tab_id)
-                    .then(() => window.close());
+                const shouldCloseOnClose = this.get("shouldCloseOnClose");
+                if (shouldCloseOnClose) {
+                    return browser.tabs.remove(tab_id)
+                        .then(() => window.close());
+                } else {
+                    return browser.tabs.remove(tab_id)
+                        .then(() => browser.runtime.sendMessage({ type: 'get_mru' }))
+                        .then((windows) => this.set({ windows }));
+                }
             },
 
             activateTopTab: function(teleport=false) {
