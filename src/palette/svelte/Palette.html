@@ -2,8 +2,11 @@
 
 <div id="wrapper" class="browser-style">
     <div id="filter_box">
-        <input type="search"
+        <input 
+            class="browser-style"
+            type="search"
             ref:filterbox 
+            autofocus
             bind:value="filter"
             placeholder="Filter..."/>
         <img class="icon" src="palette/static/preferences-16-macos.svg"
@@ -80,6 +83,11 @@
     input[type="search"] {
         background-color: white;
         color: black;
+        padding: 5px;
+        border: 2px inset;
+        margin: 0;
+        border-radius: 5px;
+        font-size: 1.3rem;
         width: calc(100% - 20px);
     }
 
@@ -199,7 +207,7 @@
         },
 
         oncreate () {
-            this.refs.filterbox.focus();
+            // this.refs.filterbox.focus();
             this.observe("constrained_highlight", (hl) => {
                 if (hl.window < 0) {
                     this.refs.filterbox.focus();
