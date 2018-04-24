@@ -8,7 +8,7 @@ export default function search(windows, filter) {
     for (let i = 0; i < windows.length; i++) {
         let temp = [];
         for (let j = 0; j < windows[i].tabs.length; j++) {
-            if (windows[i].tabs[j].title.match(regex)) {
+            if (windows[i].tabs[j].title.match(regex) || windows[i].tabs[j].url.match(regex)) {
                 temp.push(windows[i].tabs[j]);
             }
         }
