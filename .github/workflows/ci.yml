@@ -1,0 +1,26 @@
+name: "CI"
+on:
+    pull_request:
+    push:
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+              name: "Check out from version control"
+            - uses: cachix/install-nix-action@v13
+              name: "Install Nix"
+              with:
+                  install_url: https://nixos-nix-install-tests.cachix.org/serve/lb41az54kzk6j12p81br4bczary7m145/install
+                  install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
+                  extra_nix_config: |
+                      experimental-features = nix-command flakes
+            - uses: cachix/cachix-action@v10
+              name: "Connect to cachix"
+              with:
+                  name: moosingin3space
+                  authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+            - run: nix develop -c yarn
+              name: "Install yarn dependencies"
+            - run: nix develop -c yarn build
+              name: "Build extension"
