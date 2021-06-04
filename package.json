@@ -1,6 +1,6 @@
 {
   "name": "wksp-for-firefox",
-  "version": "1.0.0",
+  "version": "1.0.7",
   "main": "index.js",
   "author": "Nathan Moos <moosingin3space@gmail.com>",
   "license": "MIT",
