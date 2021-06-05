@@ -5,6 +5,7 @@
   "author": "Nathan Moos <moosingin3space@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "browserslist": "^4.16.6",
     "copy-webpack-plugin": "^9.0.0",
     "eslint": "^4.19.1",
     "font-awesome": "^4.7.0",
@@ -20,5 +21,8 @@
   "scripts": {
     "lint": "eslint",
     "build": "rimraf web-ext-artifacts && webpack && web-ext build"
-  }
+  },
+  "browserslist": [
+      "Firefox ESR"
+  ]
 }

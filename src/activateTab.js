@@ -1,16 +1,14 @@
-export default function activateTab(tab_id, teleport=false) {
+export default async function activateTab(tabId, teleport=false) {
     if (teleport) {
-        return browser.windows.getCurrent({ windowTypes: ['normal'] })
-            .then(win => browser.tabs.move(tab_id, { windowId: win.id, index: -1 }))
-            .then(tab => {
-                if (tab.id) {
-                    return browser.tabs.update(tab.id, { active: true });
-                } else {
-                    return browser.tabs.update(tab[0].id, { active: true });
-                }
-            });
+        const win = await browser.windows.getCurrent({ windowTypes: ['normal'] });
+        const tab = await browser.tabs.move(tabId, { windowId: win.id, index: -1 });
+        if (tab.id) {
+            await browser.tabs.update(tab.id, { active: true });
+        } else {
+            await browser.tabs.update(tab[0].id, { active: true });
+        }
     } else {
-        return browser.tabs.update(tab_id, { active: true })
-            .then(tab => browser.windows.update(tab.windowId, { focused: true }));
+        const tab = await browser.tabs.update(tabId, { active: true });
+        await browser.windows.update(tab.windowId, { focused: true });
     }
 }

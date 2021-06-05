@@ -28,39 +28,36 @@ browser.windows.onRemoved.addListener(winId => {
     delete mru[winId];
 });
 
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener(async (message, _sender) => {
     if (message.type == 'get_mru') {
-        browser.windows.getAll({ populate: true, windowTypes: ['normal'] })
-            .then((windows) => sortBy(windows, (win) => mru[win.id]))
-            .then((windows_by_mru) => sendResponse(windows_by_mru));
+        const windows = await browser.windows.getAll({ populate: true, windowTypes: ['normal'] });
+        const windowsByMru = sortBy(windows, win => mru[win.id]);
+        return windowsByMru;
     }
-    return true;
 });
 
-browser.omnibox.onInputChanged.addListener((input, suggest) => {
-    browser.windows.getAll({ populate: true, windowTypes: ['normal'] })
-        .then((windows) => {
-            const initial_search = search(windows, input);
-            let tabs = [];
-            for (let i = 0; i < initial_search.length; i++) {
-                Array.prototype.push.apply(tabs, initial_search[i].tabs);
-            }
-            let results = [];
-            for (let i = 0; i < tabs.length; i++) {
-                results.push({
-                    content: `wksp|switch|${tabs[i].id}`,
-                    description: `Switch to tab: ${tabs[i].title}`
-                });
-                results.push({
-                    content: `wksp|teleport|${tabs[i].id}`,
-                    description: `Teleport tab: ${tabs[i].title}`
-                });
-            }
-            suggest(results);
-        });
+browser.omnibox.onInputChanged.addListener(async (input, suggest) => {
+    const windows = await browser.windows.getAll({ populate: true, windowTypes: ['normal'] });
+        const initial_search = search(windows, input);
+        let tabs = [];
+        for (let i = 0; i < initial_search.length; i++) {
+            Array.prototype.push.apply(tabs, initial_search[i].tabs);
+        }
+        let results = [];
+        for (let i = 0; i < tabs.length; i++) {
+            results.push({
+                content: `wksp|switch|${tabs[i].id}`,
+                description: `Switch to tab: ${tabs[i].title}`
+            });
+            results.push({
+                content: `wksp|teleport|${tabs[i].id}`,
+                description: `Teleport tab: ${tabs[i].title}`
+            });
+        }
+        suggest(results);
 });
 
-browser.omnibox.onInputEntered.addListener((content, disposition) => {
+browser.omnibox.onInputEntered.addListener((content, _disposition) => {
     const [specifier, task, tabId] = content.split('|');
     if (specifier !== 'wksp') {
         return;
