@@ -1,7 +1,9 @@
 const CopyPlugin = require("copy-webpack-plugin");
 
+const mode = process.env.NODE_ENV || 'development';
+
 module.exports = {
-    mode: process.env.NODE_ENV,
+    mode,
     entry: {
         background: './src/background/main.js',
         palette: './src/palette/main.js',
@@ -19,9 +21,22 @@ module.exports = {
                 use: 'svelte-loader',
             },
             {
-                test: /\.m?js$/,
+                test: /\.m?jsx?$/,
                 exclude: /node_modules/,
                 use: 'swc-loader',
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 1,
+                            modules: true
+                        }
+                    },
+                ]
             }
         ],
     },
@@ -39,12 +54,9 @@ module.exports = {
                 {
                     from: "./src/options/index.html",
                     to: __dirname + "/dist/options.html",
-                },
-                {
-                    from: "./src/options/static",
-                    to: __dirname + "/dist/options/static",
                 }
             ]
         }),
     ],
+    devtool: mode === 'production' ? undefined : 'inline-source-map'
 };

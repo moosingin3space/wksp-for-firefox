@@ -1,0 +1,10 @@
+.top {
+    height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+    .top {
+        background: #333;
+        color: white;
+    }
+}

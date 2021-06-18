@@ -1,0 +1,36 @@
+.flexForm {
+    display: flex;
+    align-items: center;
+}
+
+.flexForm > button {
+    margin: 0;
+}
+
+.keystrokeDisplay {
+    margin-left: 1em;
+    margin-right: 1em;
+    padding: 5px;
+    font-size: 1.5rem;
+    border: 1px solid lightgray;
+    color: black;
+}
+
+.keystrokeModifying, .keystrokeDisplay:hover {
+    color: darkgray;
+    padding: 4px;
+    border: 2px solid black;
+}
+
+@media (prefers-color-scheme: dark) {
+    .keystrokeDisplay {
+        border: 1px solid darkgray;
+        color: white;
+    }
+
+    .keystrokeModifying, .keystrokeDisplay:hover {
+        color: gray;
+        padding: 4px;
+        border: 2px solid white;
+    }
+}

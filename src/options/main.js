@@ -1,15 +1,5 @@
-import Options from './svelte/Options.html';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Options from './Options.jsx';
 
-Promise.all([
-    browser.commands.getAll(),
-    browser.storage.local.get({shouldCloseOnClose: false})
-]).then(([commands, stored_opts]) => {
-        const cmd = commands[0];
-        const opt = new Options({
-            target: document.querySelector('main'),
-            data: {
-                shortcut: cmd.shortcut,
-                shouldCloseOnClose: stored_opts.shouldCloseOnClose
-            }
-        });
-});
+ReactDOM.render(<Options/>, document.querySelector('main'));
