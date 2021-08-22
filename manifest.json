@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Workspaces for Firefox",
-    "version": "1.0.7",
+    "version": "1.1.0",
 
     "description": "Implements Firefox-wide tab management, inspired by virtual desktops.",
 
