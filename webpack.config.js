@@ -37,6 +37,11 @@ module.exports = {
                         }
                     },
                 ]
+            },
+            {
+                test: /\.svg$/,
+                type: 'asset/resource',
+                use: 'svgo-loader',
             }
         ],
     },
@@ -58,5 +63,16 @@ module.exports = {
             ]
         }),
     ],
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    name: 'commons',
+                    chunks: 'initial',
+                    minChunks: 2,
+                },
+            },
+        },
+    },
     devtool: mode === 'production' ? undefined : 'inline-source-map'
 };

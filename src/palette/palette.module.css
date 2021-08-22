@@ -1,0 +1,148 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    height: 500px;
+    padding: 10px;
+    overflow-x: hidden;
+}
+
+.filterBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filterBox > img:hover {
+    cursor: pointer;
+}
+
+.search {
+    background-color: white;
+    color: black;
+    padding: 5px;
+    border: 2px inset;
+    margin: 0;
+    border-radius: 5px;
+    font-size: 1.3rem;
+    width: calc(100% - 20px);
+}
+
+.highlightedItem {
+    background-color: rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.flexParent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.flexParent > *:not(:last-child) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.flexParent > *:first-child {
+    margin-right: 50px;
+}
+
+.fullWidth {
+    width: calc(100% - 40px);
+}
+
+.controls {
+    display: inline;
+    white-space: nowrap;
+}
+
+.controls > img:hover {
+    cursor: pointer;
+}
+
+.noOverflow {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.maybeContainer {
+    display: inline-block;
+}
+
+.maybeContainer.yesContainer {
+    position: relative;
+}
+
+.maybeContainer.yesContainer::after {
+    content: '';
+    border-bottom: 2px solid;
+    border-bottom-color: inherit;
+    position: absolute;
+    left: 0;
+    top: calc(100% - 2px);
+    width: 100%;
+}
+
+.preferencesIcon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url(./static/preferences-16-macos.svg);
+}
+
+.preferencesIcon:hover {
+    cursor: pointer;
+}
+
+.pasteIcon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url(./static/paste-16.svg);
+}
+
+.pasteIcon:hover {
+    cursor: pointer;
+}
+
+.closeIcon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url(./static/close-16.svg);
+}
+
+.closeIcon:hover {
+    cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+    .highlightedItem {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search {
+        background-color: #555;
+        color: white;
+    }
+
+    .preferencesIcon {
+        background-image: url(./static/preferences-16-macos-white.svg);
+    }
+
+    .pasteIcon {
+        background-image: url(./static/paste-16-white.svg);
+    }
+
+    .closeIcon {
+        background-image: url(./static/close-16-white.svg);
+    }
+}

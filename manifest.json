@@ -34,7 +34,7 @@
     },
 
     "background": {
-        "scripts": ["dist/background.bundle.js"]
+        "scripts": ["dist/commons.bundle.js", "dist/background.bundle.js"]
     },
 
     "omnibox": {

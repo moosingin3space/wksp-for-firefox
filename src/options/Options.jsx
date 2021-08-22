@@ -71,7 +71,7 @@ const Options = () => {
     }, []);
 
     return (
-        <div className={colors.top}>
+        <div className={`${colors.top} ${styles.fullHeight}`}>
             <header className="panel-section panel-section-header">
                 <div className={`text-section-header ${commonStyles.heading}`}>
                     Workspaces for Firefox Settings
