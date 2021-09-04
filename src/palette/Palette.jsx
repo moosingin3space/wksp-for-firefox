@@ -200,14 +200,16 @@ const Palette = () => {
             if (state.highlight.window < 0 || state.highlight.tab < 0) {
                 activateTopTab(teleport);
             } else {
-                const tab = state.windows[state.highlight.window].tabs[state.highlight.tab];
+                const tab = state.filteredWindows[state.highlight.window].tabs[state.highlight.tab];
                 activateSpecificTab(tab.id, teleport);
             }
         } else if (event.keyCode == 38) {
             // up
+            event.preventDefault();
             dispatch({ type: 'HIGHLIGHT_UP' });
         } else if (event.keyCode == 40) {
             // down
+            event.preventDefault();
             dispatch({ type: 'HIGHLIGHT_DOWN' });
         } else if (event.keyCode == 191) {
             // slash (jump back to search)
@@ -245,7 +247,7 @@ const Palette = () => {
 
     return (
         <div className={`${colors.top} ${styles.wrapper} browser-style`}>
-            <div className={styles.filterBox}>
+            <div key="searchbox" className={styles.filterBox}>
                 <input
                     className={`${styles.search} browser-style`}
                     type="search"
@@ -261,13 +263,13 @@ const Palette = () => {
                 />
             </div>
             {state.filteredWindows.map((win, i) => (
-                <div key={`window${i}`} className={`panel-section-list`}>
+                <div key={win.id} className={`panel-section-list`}>
                     <div className={`${styles.noOverflow} panel-section-header`}>
                         <span className={`${styles.ellipsis} text-section-header ${commonStyles.heading}`}>{ win.title }</span>
                     </div>
                     {win.tabs.map((tab, j) => (
                         <Selectable
-                            key={`window${i}-tab${j}`}
+                            key={tab.id}
                             highlighted={state.highlight.window == i && state.highlight.tab == j}
                             onHighlightChanged={(isHighlighted) => {
                                 if (isHighlighted) {
