@@ -1,4 +1,5 @@
 const CopyPlugin = require("copy-webpack-plugin");
+const WebExtPlugin = require('web-ext-plugin');
 
 const mode = process.env.NODE_ENV || 'development';
 
@@ -61,6 +62,11 @@ module.exports = {
                     to: __dirname + "/dist/options.html",
                 }
             ]
+        }),
+        new WebExtPlugin({
+            sourceDir: __dirname + '/dist',
+            buildPackage: true,
+            overwriteDest: true,
         }),
     ],
     optimization: {

@@ -8,12 +8,12 @@
     "browser_action": {
         "default_icon": "icons/palette-32.png",
         "default_title": "Workspace Palette",
-        "default_popup": "dist/palette.html",
+        "default_popup": "palette.html",
         "browser_style": true
     },
 
     "options_ui": {
-        "page": "dist/options.html",
+        "page": "options.html",
         "browser_style": true
     },
 
@@ -34,7 +34,7 @@
     },
 
     "background": {
-        "scripts": ["dist/commons.bundle.js", "dist/background.bundle.js"]
+        "scripts": ["commons.bundle.js", "background.bundle.js"]
     },
 
     "omnibox": {

@@ -1,0 +1,5 @@
+*
+!.gitignore
+!manifest.json
+!*/
+!icons/*
